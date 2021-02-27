@@ -38,25 +38,125 @@ void error(int code, int column)
     }
 }
 
-vector<float> setTriangle(string& str)
+string figureName(string& s)
 {
-    string s = str;
-    vector<float> coord;
-    int begin = s.find("((");
-    int end = s.find("))");
+    int bracket = s.find("((");
+    string name = "";
+    int z = s.length();
+
+    for (int i = 0; i < z; i++) {
+        s[i] = tolower(s[i]); //приводим к одному регистру(строчный)
+    }
+    name = s.substr(0, bracket);
+    return name;
+}
+
+vector<double> setTriangle(string& s)
+{
+    vector<double> coord;
+    string temp = s, tempCoord = "", item;
+    int bracket = temp.find("((");
+    int endBracket = temp.find("))");
     int k = 0, column = 10;
 
-    if (end == -1) {
-        error(3, s.length() - 1);
+    if (endBracket == -1) {
+        error(3, temp.length() - 1);
+        coord.clear();
         return coord;
     }
+
     tempCoord = temp.substr(bracket);
     if ((tempCoord[0] == '(') && (tempCoord[1] == '(')) {
         tempCoord.erase(0, 2);
     } else {
         error(5, 8);
+        coord.clear();
         return coord;
     }
-    int count = 0, column = 10;
-    for (int i = 0; i <)
+    int z = tempCoord.length();
+    for (int i = 0; i < z; i++) {
+        item = "";
+        if (k < 7) {
+            if (((tempCoord[i] < 48) || (tempCoord[i] > 57))
+                && (tempCoord[i] != 32) && (tempCoord[i] != 44)
+                && (tempCoord[i] != 46)) //ОДЗ
+            {
+                error(2, column);
+                coord.clear();
+                return coord;
+            }
+            if (tempCoord[i] == ' ') {
+                item += tempCoord.substr(0, i);
+                coord.push_back(stod(item));
+                tempCoord.erase(0, i + 1);
+                z = tempCoord.length();
+                i = 0;
+                k++;
+                column++;
+            }
+            if (tempCoord[i] == ',') {
+                item += tempCoord.substr(0, i);
+                coord.push_back(stod(item));
+                tempCoord.erase(0, i + 2); //удаляем запятую и пробел за ней
+                z = tempCoord.length();
+                i = 0;
+                k++;
+                column += 2;
+            }
+        } else {
+            item = tempCoord.substr(0, tempCoord.find("))"));
+            coord.push_back(stod(item));
+            column += tempCoord.find("))") + 2;
+            tempCoord.erase(0, tempCoord.find("))") + 2);
+            z = tempCoord.length();
+            for (int j = 0; j < z; j++) {
+                if (tempCoord[j] != 32) {
+                    error(4, s.find("))") + (j + 1));
+                    coord.clear();
+                    return coord;
+                }
+            }
+        }
+        column++;
+    }
+    return coord;
+}
+
+int main()
+{
+    setlocale(LC_CTYPE, "RUSSIAN");
+    vector<pair<string, vector<double>>> flist;
+    string s;
+    int i, j;
+    cout << "Задайте фигуры" << endl;
+    while (getline(cin, s)) {
+        if (s == "") {
+            break;
+        }
+
+        vector<double> coord;
+        string name = figureName(s);
+        pair<string, vector<double>> figure;
+
+        if (name == "triangle") {
+            coord = setTriangle(s);
+        } else {
+            error(1, 0);
+        }
+
+        if (coord.size() > 0) {
+            figure.first = name;
+            figure.second = coord;
+            flist.push_back(figure);
+        }
+    }
+    int z = flist.size();
+    for (i = 0; i < z; i++) {
+        cout << i + 1 << ". " << flist[i].first << ": ";
+        int x = flist[i].second.size();
+        for (j = 0; j < x; j++) {
+            cout << flist[i].second[j] << " ";
+        }
+        cout << endl;
+    }
 }
